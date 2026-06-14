@@ -4,9 +4,15 @@ dotenv.config();
 
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazily create the OpenAI client so a missing OPENAI_API_KEY can never crash
+// the whole server at boot — only the photo-diagnosis route is affected.
+let _openai = null;
+function getOpenAI() {
+  if (_openai) return _openai;
+  if (!process.env.OPENAI_API_KEY) return null;
+  _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
 function safeMime(mime) {
   const ok = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -15,7 +21,8 @@ function safeMime(mime) {
 
 export async function photoDiagnosis(req, res) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
+    const openai = getOpenAI();
+    if (!openai) {
       return res.status(500).json({
         success: false,
         message: "OPENAI_API_KEY is missing in environment",
