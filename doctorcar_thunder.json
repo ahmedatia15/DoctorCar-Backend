@@ -1,0 +1,142 @@
+{
+  "client": "thunder-client",
+  "collections": [
+    {
+      "name": "Doctor Car API",
+      "folders": [],
+      "requests": [
+        {
+          "name": "Create Order",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/orders",
+          "body": {
+            "type": "json",
+            "raw": {
+              "userId": "67f55b145e6df82f3d5012f9",
+              "serviceType": "tow",
+              "clientLocation": {
+                "lat": 30.10,
+                "lng": 31.22
+              },
+              "price": 350
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "method": "GET",
+          "url": "http://192.168.1.10:5001/api/orders"
+        },
+        {
+          "name": "Get Single Order",
+          "method": "GET",
+          "url": "http://192.168.1.10:5001/api/orders/{{orderId}}"
+        },
+        {
+          "name": "Update Order Status",
+          "method": "PUT",
+          "url": "http://192.168.1.10:5001/api/orders/status/{{orderId}}",
+          "body": {
+            "type": "json",
+            "raw": {
+              "status": "on_the_way"
+            }
+          }
+        },
+        {
+          "name": "Technician Send Location",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/orders/location",
+          "body": {
+            "type": "json",
+            "raw": {
+              "orderId": "{{orderId}}",
+              "lat": 30.123,
+              "lng": 31.330
+            }
+          }
+        },
+        {
+          "name": "User Register",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/users/register",
+          "body": {
+            "type": "json",
+            "raw": {
+              "name": "ahmed",
+              "email": "a@test.com",
+              "password": "123456"
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/users/login",
+          "body": {
+            "type": "json",
+            "raw": {
+              "email": "a@test.com",
+              "password": "123456"
+            }
+          }
+        },
+        {
+          "name": "Add Vehicle",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/vehicles",
+          "body": {
+            "type": "json",
+            "raw": {
+              "userId": "67f55b145e6df82f3d5012f9",
+              "model": "BMW",
+              "year": 2023,
+              "plate": "س ج 1234"
+            }
+          }
+        },
+        {
+          "name": "Feedback Add",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/feedback",
+          "body": {
+            "type": "json",
+            "raw": {
+              "orderId": "{{orderId}}",
+              "rating": 5,
+              "comment": "ممتاز جدا"
+            }
+          }
+        },
+        {
+          "name": "Accident Report",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/accidents",
+          "body": {
+            "type": "json",
+            "raw": {
+              "userId": "67f55b145e6df82f3d5012f9",
+              "location": {
+                "lat": 30.11,
+                "lng": 31.22
+              },
+              "description": "حادث بسيط"
+            }
+          }
+        },
+        {
+          "name": "Paymob Create Payment",
+          "method": "POST",
+          "url": "http://192.168.1.10:5001/api/payments/create",
+          "body": {
+            "type": "json",
+            "raw": {
+              "orderId": "{{orderId}}",
+              "amount": 350
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

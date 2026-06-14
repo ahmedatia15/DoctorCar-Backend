@@ -1,0 +1,9 @@
+{
+  "watch": ["routes", "controllers", "models", "config"],
+  "ignore": [
+    "socket",
+    ".env",
+    "node_modules"
+  ],
+  "delay": "2500"
+}

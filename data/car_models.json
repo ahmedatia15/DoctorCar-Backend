@@ -1,0 +1,358 @@
+{
+  "brands": [
+    {
+      "name": "Toyota",
+      "models": [
+        "Corolla",
+        "Camry",
+        "Yaris",
+        "Supra",
+        "Avalon",
+        "Fortuner",
+        "Land Cruiser",
+        "RAV4",
+        "Hilux",
+        "Prado",
+        "Highlander",
+        "C-HR",
+        "Innova",
+        "Tundra",
+        "Sienna"
+      ]
+    },
+    {
+      "name": "Hyundai",
+      "models": [
+        "Elantra",
+        "Sonata",
+        "Accent",
+        "Tucson",
+        "Santa Fe",
+        "Creta",
+        "Venue",
+        "i10",
+        "i20",
+        "i30",
+        "Kona",
+        "Palisade",
+        "Veloster"
+      ]
+    },
+    {
+      "name": "Kia",
+      "models": [
+        "Sportage",
+        "Cerato",
+        "Rio",
+        "Seltos",
+        "Sorento",
+        "Telluride",
+        "Optima",
+        "K5",
+        "Picanto",
+        "Carens",
+        "Stinger",
+        "Niro"
+      ]
+    },
+    {
+      "name": "Nissan",
+      "models": [
+        "Sunny",
+        "Altima",
+        "Maxima",
+        "Patrol",
+        "X-Trail",
+        "Pathfinder",
+        "Kicks",
+        "Juke",
+        "Z",
+        "GT-R",
+        "Navara"
+      ]
+    },
+    {
+      "name": "Honda",
+      "models": [
+        "Civic",
+        "Accord",
+        "CR-V",
+        "HR-V",
+        "Pilot",
+        "City",
+        "Fit",
+        "Odyssey",
+        "Ridgeline"
+      ]
+    },
+    {
+      "name": "Chevrolet",
+      "models": [
+        "Cruze",
+        "Malibu",
+        "Spark",
+        "Trax",
+        "Tahoe",
+        "Suburban",
+        "Camaro",
+        "Silverado",
+        "Impala",
+        "Equinox"
+      ]
+    },
+    {
+      "name": "Ford",
+      "models": [
+        "Focus",
+        "Fiesta",
+        "Mustang",
+        "Explorer",
+        "Escape",
+        "Edge",
+        "F-150",
+        "Bronco",
+        "Ranger"
+      ]
+    },
+    {
+      "name": "BMW",
+      "models": [
+        "1 Series",
+        "3 Series",
+        "5 Series",
+        "7 Series",
+        "X1",
+        "X3",
+        "X5",
+        "X6",
+        "M3",
+        "M5",
+        "Z4"
+      ]
+    },
+    {
+      "name": "Mercedes",
+      "models": [
+        "A-Class",
+        "C-Class",
+        "E-Class",
+        "S-Class",
+        "GLA",
+        "GLC",
+        "GLE",
+        "GLS",
+        "AMG GT",
+        "CLA"
+      ]
+    },
+    {
+      "name": "Audi",
+      "models": [
+        "A3",
+        "A4",
+        "A6",
+        "A8",
+        "Q2",
+        "Q3",
+        "Q5",
+        "Q7",
+        "Q8",
+        "RS3",
+        "RS6"
+      ]
+    },
+    {
+      "name": "Ferrari",
+      "models": [
+        "488 GTB",
+        "488 Spider",
+        "812 Superfast",
+        "812 GTS",
+        "F8 Tributo",
+        "F8 Spider",
+        "Roma",
+        "SF90 Stradale",
+        "SF90 Spider",
+        "Portofino",
+        "Daytona SP3"
+      ]
+    },
+    {
+      "name": "Lamborghini",
+      "models": [
+        "Huracan",
+        "Huracan Evo",
+        "Huracan STO",
+        "Aventador",
+        "Aventador SVJ",
+        "Urus",
+        "Countach LPI 800-4",
+        "Revuelto"
+      ]
+    },
+    {
+      "name": "McLaren",
+      "models": [
+        "570S",
+        "600LT",
+        "650S",
+        "675LT",
+        "720S",
+        "765LT",
+        "GT",
+        "Artura",
+        "Elva",
+        "Senna"
+      ]
+    },
+    {
+      "name": "Bugatti",
+      "models": [
+        "Chiron",
+        "Chiron Super Sport",
+        "Divo",
+        "Centodieci",
+        "Veyron"
+      ]
+    },
+    {
+      "name": "Aston Martin",
+      "models": [
+        "Vantage",
+        "DB11",
+        "DBS Superleggera",
+        "DBX",
+        "Victor",
+        "Valhalla",
+        "Valkyrie"
+      ]
+    },
+    {
+      "name": "Bentley",
+      "models": [
+        "Bentayga",
+        "Continental GT",
+        "Continental GTC",
+        "Flying Spur",
+        "Mulsanne"
+      ]
+    },
+    {
+      "name": "Rolls Royce",
+      "models": [
+        "Phantom",
+        "Ghost",
+        "Wraith",
+        "Dawn",
+        "Cullinan",
+        "Spectre"
+      ]
+    },
+    {
+      "name": "Maserati",
+      "models": [
+        "Ghibli",
+        "Quattroporte",
+        "Levante",
+        "MC20",
+        "GranTurismo"
+      ]
+    },
+    {
+      "name": "Tesla",
+      "models": [
+        "Model S",
+        "Model 3",
+        "Model X",
+        "Model Y",
+        "Roadster",
+        "Cybertruck",
+        "Semi"
+      ]
+    },
+    {
+      "name": "Lucid",
+      "models": [
+        "Air Pure",
+        "Air Touring",
+        "Air Grand Touring",
+        "Air Sapphire"
+      ]
+    },
+    {
+      "name": "Rivian",
+      "models": [
+        "R1T",
+        "R1S",
+        "EDV-700",
+        "EDV-500"
+      ]
+    },
+    {
+      "name": "Porsche",
+      "models": [
+        "911",
+        "Cayenne",
+        "Macan",
+        "Panamera",
+        "Taycan",
+        "Boxster",
+        "Cayman"
+      ]
+    },
+    {
+      "name": "Jaguar",
+      "models": [
+        "XF",
+        "XE",
+        "F-Pace",
+        "I-Pace",
+        "F-Type"
+      ]
+    },
+    {
+      "name": "Lexus",
+      "models": [
+        "ES",
+        "LS",
+        "RX",
+        "LX",
+        "NX",
+        "IS",
+        "LC 500"
+      ]
+    },
+    {
+      "name": "Infiniti",
+      "models": [
+        "Q50",
+        "Q60",
+        "QX50",
+        "QX55",
+        "QX60",
+        "QX80"
+      ]
+    },
+    {
+      "name": "Cadillac",
+      "models": [
+        "Escalade",
+        "XT4",
+        "XT5",
+        "XT6",
+        "CT4",
+        "CT5",
+        "Lyriq"
+      ]
+    },
+    {
+      "name": "Lincoln",
+      "models": [
+        "Aviator",
+        "Navigator",
+        "Corsair",
+        "Nautilus"
+      ]
+    }
+  ]
+}
