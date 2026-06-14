@@ -30,7 +30,7 @@ import orderEstimateRoutes from "./routes/orderEstimate.routes.js";
 import mapsRoutes from "./routes/maps.routes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 
-import { attachSupportChatSocket } from "./socket/supportChatSocket.js";
+import { attachSupportChatSocket } from "./socket/supportChatsocket.js";
 import Order from "./models/orderModel.js";
 import Center from "./models/centerModel.js";
 import Accident from "./models/accidentModel.js";
