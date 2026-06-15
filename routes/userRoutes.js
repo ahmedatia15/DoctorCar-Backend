@@ -2,6 +2,8 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import Wallet from "../models/walletModel.js";
+import Vehicle from "../models/vehicleModel.js";
 import { OAuth2Client } from "google-auth-library";
 import { protect } from "../middleware/authMiddleware.js";
 import { registerUser } from "../controllers/userController.js";
@@ -123,6 +125,23 @@ const mapRole = (role) => {
 
   return "customer";
 };
+
+/* ======================================================
+   🔒 Strict role separation
+   Rejects a login attempt when the account's real role
+   does not match the portal the user logged in from
+   (customer portal vs technician portal). Admins bypass.
+====================================================== */
+const roleMismatch = (actualRole, expectedRole) => {
+  if (!expectedRole) return false;
+  if (actualRole === "admin") return false;
+  return actualRole !== expectedRole;
+};
+
+const roleMismatchMessage = (actualRole) =>
+  actualRole === "technician"
+    ? "🚫 هذا الحساب مسجَّل كحساب فني. الرجاء تسجيل الدخول من دخول الفنيين."
+    : "🚫 هذا الحساب مسجَّل كحساب عميل. الرجاء تسجيل الدخول من دخول العملاء.";
 
 /* ======================================================
    📱 OTP STORE - Development / Temporary
@@ -347,6 +366,15 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // 🔒 Enforce strict role separation (customer vs technician portal)
+    const expectedRole = req.body.role ? mapRole(req.body.role) : null;
+    if (roleMismatch(user.role, expectedRole)) {
+      return res.status(403).json({
+        success: false,
+        message: roleMismatchMessage(user.role),
+      });
+    }
+
     user.lastLogin = new Date();
     await user.save();
 
@@ -433,6 +461,16 @@ router.post("/google", async (req, res) => {
       if (!user.authProvider) user.authProvider = "local";
     }
 
+    // 🔒 Enforce strict role separation for existing accounts logging in
+    // through the wrong portal (new accounts get the requested role above).
+    const expectedRole = role ? mapRole(role) : null;
+    if (roleMismatch(user.role, expectedRole)) {
+      return res.status(403).json({
+        success: false,
+        message: roleMismatchMessage(user.role),
+      });
+    }
+
     user.lastLogin = new Date();
     await user.save();
 
@@ -461,6 +499,63 @@ router.get("/me", protect, (req, res) => {
     success: true,
     user: sanitizeUser(req.user),
   });
+});
+
+/* ======================================================
+   🏠 HOME SUMMARY
+   Powers the home-screen user-info section:
+   username, default vehicle (brand/model) and wallet balance.
+   All values are read from (and persisted in) the database.
+====================================================== */
+router.get("/home-summary", protect, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Default vehicle: explicit choice first, otherwise the latest one.
+    let vehicle = null;
+    if (user.defaultVehicle) {
+      vehicle = await Vehicle.findOne({
+        _id: user.defaultVehicle,
+        user: user._id,
+      });
+    }
+    if (!vehicle) {
+      vehicle = await Vehicle.findOne({ user: user._id }).sort({
+        createdAt: -1,
+      });
+    }
+
+    // Wallet: create an empty one on first access so balance is DB-backed.
+    let wallet = await Wallet.findOne({ user: user._id });
+    if (!wallet) {
+      wallet = await Wallet.create({
+        user: user._id,
+        balance: 0,
+        transactions: [],
+      });
+    }
+
+    return res.json({
+      success: true,
+      name: user.name,
+      email: user.email,
+      balance: wallet.balance,
+      defaultVehicle: vehicle
+        ? {
+            id: vehicle._id,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            plateNumber: vehicle.plateNumber,
+          }
+        : null,
+    });
+  } catch (err) {
+    console.error("❌ HOME SUMMARY ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "حدث خطأ في الخادم",
+    });
+  }
 });
 
 /* ======================================================

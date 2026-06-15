@@ -87,6 +87,15 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Customer only: the vehicle the user picked as their default/primary car.
+    // Read on the home screen (user-info section). Falls back to the latest
+    // vehicle when not explicitly set.
+    defaultVehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vehicle",
+      default: null,
+    },
+
     avatar: {
       type: String,
       default: "",

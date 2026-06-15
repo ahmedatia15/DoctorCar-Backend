@@ -1,6 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import Vehicle from "../models/vehicleModel.js";
+import User from "../models/userModel.js";
 
 const router = express.Router();
 
@@ -125,6 +126,40 @@ router.delete("/:id", protect, async (req, res) => {
   } catch (err) {
     console.error("❌ خطأ أثناء الحذف:", err);
     res.status(500).json({ message: "⚠️ فشل حذف السيارة" });
+  }
+});
+
+/* ============================================================
+    ⭐ 4.5) تعيين السيارة الافتراضية للمستخدم
+    تُقرأ في الصفحة الرئيسية (قسم بيانات المستخدم)
+============================================================ */
+router.put("/:id/default", protect, async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findById(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).json({ message: "🚘 السيارة غير موجودة" });
+    }
+
+    if (vehicle.user.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "⛔ ليس لديك صلاحية لتعيين هذه السيارة" });
+    }
+
+    await User.updateOne(
+      { _id: req.user._id },
+      { defaultVehicle: vehicle._id }
+    );
+
+    res.json({
+      success: true,
+      message: "⭐ تم تعيين السيارة الافتراضية",
+      defaultVehicle: vehicle._id,
+    });
+  } catch (err) {
+    console.error("❌ خطأ أثناء تعيين السيارة الافتراضية:", err);
+    res.status(500).json({ message: "⚠️ فشل تعيين السيارة الافتراضية" });
   }
 });
 

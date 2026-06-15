@@ -22,6 +22,16 @@ const generateToken = (user) => {
 // helper: normalize email
 const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
 
+// helper: map a portal/legacy role token to a canonical account role
+const mapRole = (role) => {
+  const r = String(role || "").trim().toLowerCase();
+  if (["driver", "technician", "mechanic", "service_provider"].includes(r)) {
+    return "technician";
+  }
+  if (r === "admin") return "admin";
+  return "customer";
+};
+
 /* ======================================================
    ✅ REGISTER (typed: customer | technician)
    - Single source of truth used by /api/auth/register
@@ -183,6 +193,18 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "❌ بيانات الدخول غير صحيحة",
+      });
+    }
+
+    // 🔒 Strict role separation: reject a mismatched portal login.
+    const expectedRole = req.body.role ? mapRole(req.body.role) : null;
+    if (expectedRole && user.role !== "admin" && user.role !== expectedRole) {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.role === "technician"
+            ? "🚫 هذا الحساب مسجَّل كحساب فني. الرجاء تسجيل الدخول من دخول الفنيين."
+            : "🚫 هذا الحساب مسجَّل كحساب عميل. الرجاء تسجيل الدخول من دخول العملاء.",
       });
     }
 
