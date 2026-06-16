@@ -2,12 +2,17 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
-import Wallet from "../models/walletModel.js";
 import Vehicle from "../models/vehicleModel.js";
 import { OAuth2Client } from "google-auth-library";
 import { protect } from "../middleware/authMiddleware.js";
 import { registerUser } from "../controllers/userController.js";
 import { rateLimit } from "../utils/rateLimit.js";
+import {
+  recordLoginSession,
+  recordFailedLogin,
+} from "../utils/sessions.js";
+import { verifyToken } from "../utils/totp.js";
+import { createNotification } from "../utils/notify.js";
 
 const router = express.Router();
 
@@ -62,23 +67,23 @@ const getJwtSecret = () => process.env.JWT_SECRET;
 /* ======================================================
    🔐 Generate Token
 ====================================================== */
-const generateToken = (user) => {
+const generateToken = (user, jti) => {
   const secret = getJwtSecret();
 
   if (!secret) {
     throw new Error("JWT_SECRET غير موجود في .env");
   }
 
-  return jwt.sign(
-    {
-      id: user._id,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    },
-    secret,
-    { expiresIn: "30d" }
-  );
+  const payload = {
+    id: user._id,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+  };
+  // jti lets us tie the token to a revocable session.
+  if (jti) payload.jti = jti;
+
+  return jwt.sign(payload, secret, { expiresIn: "30d" });
 };
 
 /* ======================================================
@@ -298,7 +303,8 @@ router.post("/verify-login-otp", async (req, res) => {
 
     deleteOtp(phone);
 
-    const token = generateToken(user);
+    const jti = await recordLoginSession(req, user._id);
+    const token = generateToken(user, jti);
 
     return res.status(200).json({
       success: true,
@@ -341,7 +347,9 @@ router.post("/login", async (req, res) => {
 
     const safeEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email: safeEmail }).select("+password");
+    const user = await User.findOne({ email: safeEmail }).select(
+      "+password +twoFactor.secret"
+    );
 
     if (!user) {
       return res.status(401).json({
@@ -360,6 +368,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      await recordFailedLogin(req, user._id);
       return res.status(401).json({
         success: false,
         message: "❌ بيانات الدخول غير صحيحة",
@@ -375,10 +384,36 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // 🔐 Two-Factor: if enabled, a valid TOTP code is required to finish login.
+    if (user.twoFactor && user.twoFactor.enabled) {
+      const totp = String(req.body.totp || req.body.code || "").trim();
+      if (!totp) {
+        return res.status(200).json({
+          success: false,
+          twoFactorRequired: true,
+          message: "أدخل رمز التحقق بخطوتين",
+        });
+      }
+      if (!verifyToken(user.twoFactor.secret, totp)) {
+        return res.status(401).json({
+          success: false,
+          twoFactorRequired: true,
+          message: "رمز التحقق غير صحيح",
+        });
+      }
+    }
+
     user.lastLogin = new Date();
     await user.save();
 
-    const token = generateToken(user);
+    const jti = await recordLoginSession(req, user._id);
+    const token = generateToken(user, jti);
+
+    await createNotification(user._id, {
+      type: "security",
+      title: "تسجيل دخول جديد",
+      body: "تم تسجيل الدخول إلى حسابك على جهاز.",
+    });
 
     return res.status(200).json({
       success: true,
@@ -474,7 +509,8 @@ router.post("/google", async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    const token = generateToken(user);
+    const jti = await recordLoginSession(req, user._id);
+    const token = generateToken(user, jti);
 
     return res.status(200).json({
       success: true,
@@ -525,21 +561,12 @@ router.get("/home-summary", protect, async (req, res) => {
       });
     }
 
-    // Wallet: create an empty one on first access so balance is DB-backed.
-    let wallet = await Wallet.findOne({ user: user._id });
-    if (!wallet) {
-      wallet = await Wallet.create({
-        user: user._id,
-        balance: 0,
-        transactions: [],
-      });
-    }
-
+    // Balance is the canonical value stored on the user record.
     return res.json({
       success: true,
       name: user.name,
       email: user.email,
-      balance: wallet.balance,
+      balance: user.balance || 0,
       defaultVehicle: vehicle
         ? {
             id: vehicle._id,

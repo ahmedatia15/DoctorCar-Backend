@@ -14,6 +14,7 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authroutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import accountRoutes from "./routes/accountRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import technicianRoutes from "./routes/technicianRoutes.js";
@@ -520,6 +521,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/account", accountRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/technicians", technicianRoutes);

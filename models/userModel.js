@@ -96,6 +96,46 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    // ============================================================
+    // 💰 Wallet balance (canonical source of truth on the user)
+    // Updated atomically by the recharge endpoint ($inc).
+    // ============================================================
+    balance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // ============================================================
+    // 🔔 Notifications preference + push tokens (FCM)
+    // ============================================================
+    notificationsEnabled: {
+      type: Boolean,
+      default: true,
+    },
+
+    pushTokens: {
+      type: [String],
+      default: [],
+    },
+
+    // ============================================================
+    // 🔐 Two-Factor Authentication (TOTP) — disabled by default
+    // ============================================================
+    twoFactor: {
+      enabled: { type: Boolean, default: false },
+      // Secrets are never returned to the client (select:false).
+      secret: { type: String, default: "", select: false },
+      pendingSecret: { type: String, default: "", select: false },
+    },
+
+    // App-lock (biometric) preference flag — the biometric data itself
+    // never leaves the device; we only persist whether it's enabled.
+    biometricEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
     avatar: {
       type: String,
       default: "",
