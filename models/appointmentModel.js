@@ -13,6 +13,7 @@ const appointmentSchema = new mongoose.Schema(
 
     service: { type: String, required: true, trim: true },
     center: { type: String, required: true, trim: true },
+    vehicle: { type: String, default: "", trim: true },
 
     // Scheduled appointment date/time.
     date: { type: Date, required: true },

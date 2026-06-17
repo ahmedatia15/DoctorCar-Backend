@@ -5,7 +5,7 @@ import { createNotification } from "../utils/notify.js";
 // POST /api/appointments   { service, center, date, notes? }
 export const createAppointment = async (req, res) => {
   try {
-    const { service, center, date, notes } = req.body;
+    const { service, center, date, vehicle, notes } = req.body;
 
     if (!service || !center || !date) {
       return res.status(400).json({
@@ -25,6 +25,7 @@ export const createAppointment = async (req, res) => {
       user: req.user._id,
       service: String(service).trim(),
       center: String(center).trim(),
+      vehicle: (vehicle || "").trim(),
       date: when,
       notes: (notes || "").trim(),
       status: "scheduled",

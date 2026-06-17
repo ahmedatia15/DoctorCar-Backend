@@ -21,16 +21,21 @@ router.post("/", protect, async (req, res) => {
       year,
     } = req.body;
 
-    if (!brand || !model || !fuel || !condition || !plateNumber) {
+    // ✅ Plate & chassis are now OPTIONAL.
+    if (!brand || !model || !fuel || !condition) {
       return res.status(400).json({
-        message: "❌ الرجاء إدخال جميع البيانات المطلوبة",
+        message: "❌ الرجاء إدخال الماركة والموديل ونوع الوقود والحالة",
       });
     }
 
-    // التأكد من أن اللوحة غير مكررة
-    const existing = await Vehicle.findOne({ plateNumber });
-    if (existing) {
-      return res.status(400).json({ message: "🚫 هذه السيارة مسجلة مسبقًا" });
+    const plate = (plateNumber || "").trim();
+
+    // اللوحة اختيارية، لكن لو موجودة لازم تكون غير مكررة
+    if (plate) {
+      const existing = await Vehicle.findOne({ plateNumber: plate });
+      if (existing) {
+        return res.status(400).json({ message: "🚫 هذه السيارة مسجلة مسبقًا" });
+      }
     }
 
     const vehicle = new Vehicle({
@@ -39,8 +44,8 @@ router.post("/", protect, async (req, res) => {
       model,
       fuel,
       condition,
-      plateNumber,
-      chassisNumber,
+      ...(plate ? { plateNumber: plate } : {}),
+      ...(chassisNumber ? { chassisNumber } : {}),
       color,
       year,
     });

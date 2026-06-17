@@ -39,10 +39,12 @@ const vehicleSchema = new mongoose.Schema(
       default: "جيدة",
     },
 
+    // Optional. Unique only when present (sparse) so multiple vehicles can be
+    // added without a plate number.
     plateNumber: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
       trim: true,
     },
 

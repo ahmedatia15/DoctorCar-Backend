@@ -35,6 +35,10 @@ const centerSchema = new mongoose.Schema(
     // types (manual or google)
     types: { type: [String], default: [] },
 
+    // ✅ Maintenance services this specific center offers. The Periodic
+    // Maintenance flow filters centers by the service the user selected.
+    services: { type: [String], default: [] },
+
     // data source: manual | google
     source: {
       type: String,
