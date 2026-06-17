@@ -1,25 +1,46 @@
 // PATH: backend/controllers/storeOrderController.js
 import StoreOrder from "../models/storeOrderModel.js";
+import Cart from "../models/cartModel.js";
 import { createNotification } from "../utils/notify.js";
 
-// POST /api/store-orders   { items, total, address?, paymentMethod?, notes? }
+// POST /api/store-orders
+//   { fromCart: true, address?, paymentMethod?, notes? }            (preferred)
+//   { items, total, address?, paymentMethod?, notes? }              (manual)
 export const createStoreOrder = async (req, res) => {
   try {
-    const items = Array.isArray(req.body.items) ? req.body.items : [];
-    const total = Number(req.body.total);
+    let cleanItems = [];
+    let total;
 
-    if (!Number.isFinite(total) || total < 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "إجمالي غير صالح" });
+    if (req.body.fromCart) {
+      // Build the order from the user's server-side cart.
+      const cart = await Cart.findOne({ user: req.user._id });
+      if (!cart || cart.items.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "السلة فارغة" });
+      }
+      cleanItems = cart.items.map((it) => ({
+        name: it.name,
+        qty: it.qty,
+        price: it.price,
+        image: it.image,
+      }));
+      total = cleanItems.reduce((s, it) => s + it.price * it.qty, 0);
+    } else {
+      const items = Array.isArray(req.body.items) ? req.body.items : [];
+      total = Number(req.body.total);
+      if (!Number.isFinite(total) || total < 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "إجمالي غير صالح" });
+      }
+      cleanItems = items.map((it) => ({
+        name: String(it.name || "").trim(),
+        qty: Number(it.qty) > 0 ? Number(it.qty) : 1,
+        price: Number(it.price) || 0,
+        image: String(it.image || ""),
+      }));
     }
-
-    const cleanItems = items.map((it) => ({
-      name: String(it.name || "").trim(),
-      qty: Number(it.qty) > 0 ? Number(it.qty) : 1,
-      price: Number(it.price) || 0,
-      image: String(it.image || ""),
-    }));
 
     const itemCount = cleanItems.reduce((sum, it) => sum + it.qty, 0);
 
@@ -40,6 +61,11 @@ export const createStoreOrder = async (req, res) => {
       body: `طلب بقيمة ${total} ج.م قيد المراجعة.`,
       data: { storeOrderId: order._id },
     });
+
+    // Empty the cart after a successful checkout.
+    if (req.body.fromCart) {
+      await Cart.updateOne({ user: req.user._id }, { $set: { items: [] } });
+    }
 
     return res.status(201).json({ success: true, order });
   } catch (err) {
