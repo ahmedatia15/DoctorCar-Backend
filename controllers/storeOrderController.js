@@ -1,6 +1,7 @@
 // PATH: backend/controllers/storeOrderController.js
 import StoreOrder from "../models/storeOrderModel.js";
 import Cart from "../models/cartModel.js";
+import User from "../models/userModel.js";
 import { createNotification } from "../utils/notify.js";
 
 // POST /api/store-orders
@@ -44,13 +45,28 @@ export const createStoreOrder = async (req, res) => {
 
     const itemCount = cleanItems.reduce((sum, it) => sum + it.qty, 0);
 
+    // Wallet payment: verify and deduct balance atomically
+    const paymentMethod = String(req.body.paymentMethod || "cash").trim();
+    if (paymentMethod === "wallet") {
+      const user = await User.findById(req.user._id).select("balance");
+      if (!user || user.balance < total) {
+        return res.status(400).json({
+          success: false,
+          insufficientBalance: true,
+          balance: user?.balance ?? 0,
+          message: "رصيد غير كافٍ",
+        });
+      }
+      await User.findByIdAndUpdate(req.user._id, { $inc: { balance: -total } });
+    }
+
     const order = await StoreOrder.create({
       user: req.user._id,
       items: cleanItems,
       itemCount,
       total,
       address: String(req.body.address || "").trim(),
-      paymentMethod: String(req.body.paymentMethod || "cash").trim(),
+      paymentMethod,
       notes: String(req.body.notes || "").trim(),
       status: "pending",
     });
@@ -67,7 +83,15 @@ export const createStoreOrder = async (req, res) => {
       await Cart.updateOne({ user: req.user._id }, { $set: { items: [] } });
     }
 
-    return res.status(201).json({ success: true, order });
+    const updatedUser = paymentMethod === "wallet"
+      ? await User.findById(req.user._id).select("balance").lean()
+      : null;
+
+    return res.status(201).json({
+      success: true,
+      order,
+      ...(updatedUser && { newBalance: updatedUser.balance }),
+    });
   } catch (err) {
     console.error("❌ createStoreOrder:", err);
     return res.status(500).json({ success: false, message: "خطأ في الخادم" });
