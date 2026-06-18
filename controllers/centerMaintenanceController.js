@@ -13,6 +13,7 @@ const MAINTENANCE_CENTERS = [
     lng: 31.41496068,
     address: "بجوار NILE Academy For Science",
     governorate: "دمياط",
+    imageUrl: "assets/images/DR_Car_Nile_Center.png",
     services: [
       "تغيير الزيت والفلتر",
       "الفرامل",
@@ -29,6 +30,7 @@ const MAINTENANCE_CENTERS = [
     lng: 31.39404454,
     address: "سندوب - دمياط",
     governorate: "دمياط",
+    imageUrl: "assets/images/DR_Car_Sandub_Center.png",
     services: [
       "تغيير الزيت والفلتر",
       "التكييف",
@@ -45,6 +47,7 @@ const MAINTENANCE_CENTERS = [
     lng: 31.3504002,
     address: "الجامعة - دمياط",
     governorate: "دمياط",
+    imageUrl: "assets/images/DR_Car_Elgamaa_Center.png",
     services: [
       "تغيير الزيت والفلتر",
       "الفرامل",
@@ -68,6 +71,7 @@ export const seedMaintenanceCenters = async () => {
           address: c.address,
           governorate: c.governorate,
           services: c.services,
+          imageUrl: c.imageUrl || "",
           source: "manual",
           location: { type: "Point", coordinates: [c.lng, c.lat] },
         },
@@ -85,6 +89,7 @@ const shapeCenter = (doc) => ({
   address: doc.address || "",
   governorate: doc.governorate || "",
   services: doc.services || [],
+  imageUrl: doc.imageUrl || "",
   lat: doc.location?.coordinates?.[1],
   lng: doc.location?.coordinates?.[0],
 });
