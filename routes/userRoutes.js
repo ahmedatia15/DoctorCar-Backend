@@ -13,6 +13,7 @@ import {
 } from "../utils/sessions.js";
 import { verifyToken } from "../utils/totp.js";
 import { createNotification } from "../utils/notify.js";
+import { ensureTechnicianProfile } from "../utils/ensureTechnicianProfile.js";
 
 const router = express.Router();
 
@@ -415,11 +416,22 @@ router.post("/login", async (req, res) => {
       body: "تم تسجيل الدخول إلى حسابك على جهاز.",
     });
 
+    let technicianId = null;
+    if (user.role === "technician") {
+      try {
+        const tech = await ensureTechnicianProfile(user);
+        technicianId = tech?._id || null;
+      } catch (e) {
+        console.warn("⚠️ ensureTechnicianProfile (login):", e?.message);
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: "تم تسجيل الدخول بنجاح ✅",
       token,
       user: sanitizeUser(user),
+      technicianId,
     });
   } catch (err) {
     console.error("❌ LOGIN ERROR:", err);

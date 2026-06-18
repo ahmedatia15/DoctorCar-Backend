@@ -28,14 +28,14 @@ const mapContainerStyle = {
   borderRadius: "24px",
 };
 
-const darkMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#0b1220" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#cbd5e1" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#020617" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#334155" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2563eb" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+const lightMapStyle = [
+  { elementType: "geometry", stylers: [{ color: "#f4f7fb" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#475569" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e2e8f0" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#bfdbfe" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#dbeafe" }] },
   { featureType: "poi", stylers: [{ visibility: "off" }] },
   { featureType: "transit", stylers: [{ visibility: "off" }] },
 ];
@@ -248,7 +248,7 @@ onLoad={(map) => {
   }
 }}
         options={{
-          styles: darkMapStyle,
+          styles: lightMapStyle,
           streetViewControl: false,
           mapTypeControl: false,
           fullscreenControl: false,
@@ -289,9 +289,9 @@ onLoad={(map) => {
                   suppressMarkers: true,
                   preserveViewport: true,
                   polylineOptions: {
-                    strokeColor: emergency ? "#f43f5e" : "#22d3ee",
+                    strokeColor: emergency ? "#e11d48" : "#2563eb",
                     strokeWeight: big ? 7 : 6,
-                    strokeOpacity: 0.95,
+                    strokeOpacity: 0.92,
                   },
                 }}
               />

@@ -5,6 +5,7 @@ import {
   normalizeRegistration,
   validateRegistration,
 } from "../utils/validateRegistration.js";
+import { ensureTechnicianProfile } from "../utils/ensureTechnicianProfile.js";
 
 // helper: generate JWT
 const generateToken = (user) => {
@@ -105,12 +106,23 @@ export const registerUser = async (req, res) => {
 
     const token = generateToken(user);
 
+    let technicianId = null;
+    if (user.role === "technician") {
+      try {
+        const tech = await ensureTechnicianProfile(user);
+        technicianId = tech?._id || null;
+      } catch (e) {
+        console.warn("⚠️ ensureTechnicianProfile (register):", e?.message);
+      }
+    }
+
     // password is stripped automatically (select:false + toJSON transform)
     return res.status(201).json({
       success: true,
       message: "تم التسجيل بنجاح ✅",
       token,
       user,
+      technicianId,
     });
   } catch (err) {
     // Mongo duplicate key → structured error

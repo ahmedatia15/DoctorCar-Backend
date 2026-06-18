@@ -15,6 +15,8 @@ import TrackingMap from "./components/TrackingMap";
 import TrackingInfo from "./components/TrackingInfo";
 import LogsPanel from "./components/LogsPanel";
 import FullTracking from "./components/FullTracking";
+import CenterCatalog from "./components/CenterCatalog";
+import AppointmentsPanel from "./components/AppointmentsPanel";
 
 import {
   assignedTech,
@@ -781,6 +783,10 @@ export default function App() {
 
           <LogsPanel logs={logs} />
         </section>
+
+        <CenterCatalog />
+
+        <AppointmentsPanel />
       </main>
 
       <Sidebar

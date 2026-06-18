@@ -1,7 +1,7 @@
 import {
-  ArrowRight,
   Car,
   CheckCircle2,
+  ChevronRight,
   MapPinned,
   Navigation,
   Play,
@@ -64,7 +64,7 @@ export default function FullTracking({
           className="uber-back-btn"
           onClick={() => setTrackingFullScreen(false)}
         >
-          <ArrowRight size={20} />
+          <ChevronRight size={20} strokeWidth={2.6} />
           <span>رجوع للطلبات</span>
         </button>
 

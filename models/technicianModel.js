@@ -24,8 +24,11 @@ const technicianSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: [true, "يجب إدخال رقم الهاتف"],
+      // sparse + unique so phone-less imports and user-linked rows whose phone
+      // matches the parent User do not collide.
       unique: true,
-      match: [/^[0-9]{8,15}$/, "رقم الهاتف غير صالح"],
+      sparse: true,
+      trim: true,
     },
 
     // =========================
@@ -36,6 +39,28 @@ const technicianSchema = new mongoose.Schema(
       enum: ["tow", "battery", "fuel", "tire", "ride"],
       required: [true, "يجب تحديد نوع الخدمة"],
       index: true,
+    },
+
+    specialty: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    governorate: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    earnings: {
+      total: { type: Number, default: 0 },
+      currency: { type: String, default: "EGP" },
+    },
+
+    completedJobs: {
+      type: Number,
+      default: 0,
     },
 
     // =========================

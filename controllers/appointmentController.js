@@ -58,6 +58,42 @@ export const getMyAppointments = async (req, res) => {
   }
 };
 
+// GET /api/appointments/center?center=NAME&limit=N
+// Used by the center dashboard to show all incoming maintenance bookings.
+// Optionally filtered by center name; returns the customer's display name.
+export const getCenterAppointments = async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 100, 500);
+    const filter = {};
+    const centerName = String(req.query.center || "").trim();
+    if (centerName) filter.center = centerName;
+
+    const items = await Appointment.find(filter)
+      .sort({ date: -1 })
+      .limit(limit)
+      .populate("user", "name phone")
+      .lean();
+
+    const shaped = items.map((a) => ({
+      id: a._id,
+      service: a.service,
+      center: a.center,
+      vehicle: a.vehicle,
+      date: a.date,
+      status: a.status,
+      notes: a.notes,
+      userName: a.user?.name || "",
+      userPhone: a.user?.phone || "",
+      createdAt: a.createdAt,
+    }));
+
+    return res.json({ success: true, appointments: shaped });
+  } catch (err) {
+    console.error("❌ getCenterAppointments:", err);
+    return res.status(500).json({ success: false, message: "خطأ في الخادم" });
+  }
+};
+
 // PATCH /api/appointments/:id/cancel
 export const cancelAppointment = async (req, res) => {
   try {

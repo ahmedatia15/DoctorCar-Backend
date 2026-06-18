@@ -6,8 +6,14 @@ import {
   acceptRequest,
   completeRequest,
 } from "../controllers/technicianController.js";
+import technicianSelfRoutes from "./technicianSelfRoutes.js";
 
 const router = express.Router();
+
+// ===================================================================
+// 👤 الفني الحالي (self) — كل المسارات تحت /me/**
+// ===================================================================
+router.use("/me", technicianSelfRoutes);
 
 // ===================================================================
 // 👷‍♂️ القسم الأول: الفنيين (Technicians)
