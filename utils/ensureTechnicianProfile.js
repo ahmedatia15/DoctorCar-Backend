@@ -1,8 +1,9 @@
 // PATH: backend/utils/ensureTechnicianProfile.js
 //
 // Idempotently link a User (role=technician) to a Technician profile document.
-// Returns the Technician doc (existing or newly created). Never throws on
-// duplicates — falls back to fetching the existing row.
+// Returns the Technician doc (existing or newly created). Resilient to phone
+// collisions and concurrent calls — falls back to a per-user-unique phone token
+// so a valid technician user always ends up with a profile.
 import Technician from "../models/technicianModel.js";
 
 const VALID_SPECIALTIES = ["tow", "battery", "fuel", "tire", "ride"];
@@ -17,44 +18,78 @@ const mapSpecialty = (raw) => {
   return "tow";
 };
 
+const basePayload = (user) => ({
+  user: user._id,
+  name: user.name || "Technician",
+  serviceType: mapSpecialty(user.specialty),
+  governorate: user.governorate || "",
+  specialty: user.specialty || "",
+  location: { type: "Point", coordinates: [0, 0] },
+  isAvailable: false,
+  isOnline: false,
+});
+
 export async function ensureTechnicianProfile(user) {
   if (!user || !user._id) return null;
   if (user.role !== "technician") return null;
 
-  let tech = await Technician.findOne({ user: user._id });
-  if (tech) return tech;
+  // 1) Already linked? Return it.
+  const existing = await Technician.findOne({ user: user._id });
+  if (existing) return existing;
 
+  // 2) An orphan / legacy doc with this phone? Try to link it. If the doc is
+  //    stale (missing now-required fields), swallow the error and fall through
+  //    to the create path instead of bubbling a validation 500.
   if (user.phone) {
-    const byPhone = await Technician.findOne({ phone: user.phone });
-    if (byPhone) {
-      byPhone.user = user._id;
-      if (!byPhone.name) byPhone.name = user.name;
-      await byPhone.save();
-      return byPhone;
+    try {
+      const byPhone = await Technician.findOne({ phone: user.phone });
+      if (byPhone) {
+        byPhone.user = user._id;
+        if (!byPhone.name) byPhone.name = user.name || "Technician";
+        if (!byPhone.serviceType) byPhone.serviceType = mapSpecialty(user.specialty);
+        if (!byPhone.location || !Array.isArray(byPhone.location.coordinates)) {
+          byPhone.location = { type: "Point", coordinates: [0, 0] };
+        }
+        await byPhone.save();
+        return byPhone;
+      }
+    } catch (err) {
+      console.warn("⚠️ ensureTechnicianProfile (link by phone):", err?.message);
     }
   }
 
+  // 3) Create fresh. On any failure re-fetch by user (handles concurrent
+  //    creators) and, for phone-collision 11000s, retry with a per-user-unique
+  //    phone token so a valid technician is never left without a profile.
+  const userPhoneFallback = `u_${String(user._id)}`;
+
   try {
-    tech = await Technician.create({
-      user: user._id,
-      name: user.name || "Technician",
-      phone: user.phone || `u_${String(user._id)}`,
-      serviceType: mapSpecialty(user.specialty),
-      governorate: user.governorate || "",
-      specialty: user.specialty || "",
-      location: {
-        type: "Point",
-        coordinates: [0, 0],
-      },
-      isAvailable: false,
-      isOnline: false,
+    return await Technician.create({
+      ...basePayload(user),
+      phone: user.phone || userPhoneFallback,
     });
-    return tech;
   } catch (err) {
+    const linked = await Technician.findOne({ user: user._id });
+    if (linked) return linked;
+
     if (err && err.code === 11000) {
-      return await Technician.findOne({ user: user._id });
+      try {
+        return await Technician.create({
+          ...basePayload(user),
+          phone: userPhoneFallback,
+        });
+      } catch (err2) {
+        const linked2 = await Technician.findOne({ user: user._id });
+        if (linked2) return linked2;
+        console.error(
+          "❌ ensureTechnicianProfile (fallback create):",
+          err2?.message
+        );
+      }
+    } else {
+      console.error("❌ ensureTechnicianProfile (create):", err?.message);
     }
-    throw err;
+    return null;
   }
 }
 
