@@ -39,6 +39,7 @@ import { attachSupportChatSocket } from "./socket/supportChatsocket.js";
 import Order from "./models/orderModel.js";
 import Center from "./models/centerModel.js";
 import Accident from "./models/accidentModel.js";
+import Technician from "./models/technicianModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1560,6 +1561,30 @@ async function startServer() {
       console.log("✅ Center indexes synced");
     } catch (error) {
       console.warn("⚠️ Center index sync failed:", error?.message || error);
+    }
+
+    // Drop legacy Technician indexes that point at fields no longer in the
+    // schema (e.g. an old unique `userId_1` from a previous schema version).
+    // Without this, every new Technician.create violates the stale index
+    // because the field is undefined on all new docs.
+    try {
+      const indexes = await Technician.collection.indexes();
+      const stale = indexes.filter((idx) => {
+        const keys = Object.keys(idx.key || {});
+        return keys.some((k) => k === "userId");
+      });
+      for (const idx of stale) {
+        try {
+          await Technician.collection.dropIndex(idx.name);
+          console.log(`🗑️  Dropped stale Technician index: ${idx.name}`);
+        } catch (e) {
+          console.warn(`⚠️ Could not drop Technician index ${idx.name}:`, e?.message);
+        }
+      }
+      await Technician.syncIndexes();
+      console.log("✅ Technician indexes synced");
+    } catch (error) {
+      console.warn("⚠️ Technician index sync failed:", error?.message || error);
     }
   }
 
