@@ -3,7 +3,10 @@
 // Idempotently link a User (role=technician) to a Technician profile document.
 // Returns the Technician doc (existing or newly created). Resilient to phone
 // collisions and concurrent calls — falls back to a per-user-unique phone token
-// so a valid technician user always ends up with a profile.
+// so a valid technician user always ends up with a profile. When a hard failure
+// remains (e.g. a stale unique index that we can't satisfy), throws with the
+// underlying Mongo/Mongoose error so the caller can surface a real cause
+// instead of a generic "تعذر تحميل بيانات الفني" 500.
 import Technician from "../models/technicianModel.js";
 
 const VALID_SPECIALTIES = ["tow", "battery", "fuel", "tire", "ride"];
@@ -28,6 +31,19 @@ const basePayload = (user) => ({
   isAvailable: false,
   isOnline: false,
 });
+
+const describeError = (err) => {
+  if (!err) return "unknown error";
+  if (err.name === "ValidationError") {
+    const fields = Object.keys(err.errors || {}).join(", ");
+    return `validation failed (${fields}): ${err.message}`;
+  }
+  if (err.code === 11000) {
+    const fields = Object.keys(err.keyPattern || err.keyValue || {}).join(", ");
+    return `duplicate key on ${fields || "unknown field"}`;
+  }
+  return err.message || String(err);
+};
 
 export async function ensureTechnicianProfile(user) {
   if (!user || !user._id) return null;
@@ -54,7 +70,7 @@ export async function ensureTechnicianProfile(user) {
         return byPhone;
       }
     } catch (err) {
-      console.warn("⚠️ ensureTechnicianProfile (link by phone):", err?.message);
+      console.warn("⚠️ ensureTechnicianProfile (link by phone):", describeError(err));
     }
   }
 
@@ -63,12 +79,14 @@ export async function ensureTechnicianProfile(user) {
   //    phone token so a valid technician is never left without a profile.
   const userPhoneFallback = `u_${String(user._id)}`;
 
+  let firstErr = null;
   try {
     return await Technician.create({
       ...basePayload(user),
       phone: user.phone || userPhoneFallback,
     });
   } catch (err) {
+    firstErr = err;
     const linked = await Technician.findOne({ user: user._id });
     if (linked) return linked;
 
@@ -81,15 +99,18 @@ export async function ensureTechnicianProfile(user) {
       } catch (err2) {
         const linked2 = await Technician.findOne({ user: user._id });
         if (linked2) return linked2;
-        console.error(
-          "❌ ensureTechnicianProfile (fallback create):",
-          err2?.message
+        console.error("❌ ensureTechnicianProfile (fallback create):", describeError(err2));
+        const e = new Error(
+          `Technician.create failed (initial: ${describeError(err)}; fallback: ${describeError(err2)})`
         );
+        e.cause = err2;
+        throw e;
       }
-    } else {
-      console.error("❌ ensureTechnicianProfile (create):", err?.message);
     }
-    return null;
+    console.error("❌ ensureTechnicianProfile (create):", describeError(err));
+    const e = new Error(`Technician.create failed: ${describeError(err)}`);
+    e.cause = err;
+    throw e;
   }
 }
 
