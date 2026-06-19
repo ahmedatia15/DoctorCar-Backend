@@ -1,8 +1,101 @@
 import express from "express";
+import mongoose from "mongoose";
 import Order from "../models/orderModel.js";
+import Accident from "../models/accidentModel.js";
 import { onlineTechnicians } from "../server.js";
 
 const router = express.Router();
+
+function accidentToOrderLike(a) {
+  const doc = a?.toObject ? a.toObject() : a;
+  const id = String(doc._id);
+
+  return {
+    _id: id,
+    id,
+    orderId: id,
+    type: doc.type || "emergency",
+    priority: doc.priority || "high",
+    serviceType: doc.serviceType || "accident",
+    serviceName: doc.serviceName || doc.serviceType || "accident",
+    status: doc.status || "pending",
+    userName: doc.emergencyContactName || "بلاغ طوارئ",
+    customerName: doc.emergencyContactName || "بلاغ طوارئ",
+    emergencyContactName: doc.emergencyContactName || "",
+    emergencyContactPhone: doc.emergencyContactPhone || "",
+    notes: doc.notes || "",
+    imageUrls: doc.imageUrls || [],
+    audioUrl: doc.audioUrl || "",
+    customerLocation: { lat: Number(doc.lat), lng: Number(doc.lng), address: doc.address || "" },
+    location: { lat: Number(doc.lat), lng: Number(doc.lng), address: doc.address || "" },
+    pickupLocation: { lat: Number(doc.lat), lng: Number(doc.lng), address: doc.address || "" },
+    technician: doc.assignedTechnician
+      ? { techId: String(doc.assignedTechnician) }
+      : doc.assignedTechnicianName
+      ? { techName: String(doc.assignedTechnicianName) }
+      : null,
+    center: doc.assignedCenter ? String(doc.assignedCenter) : null,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  };
+}
+
+// GET /api/orders/center?center=<id>&limit=200
+// Unified feed of orders + accidents for the center dashboard (initial load).
+// Public on purpose (same pattern as /api/appointments/center).
+router.get("/center", async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 200, 500);
+    const centerId = String(req.query.center || "").trim();
+
+    const orderFilter = {};
+    const accidentFilter = {};
+
+    if (centerId && mongoose.Types.ObjectId.isValid(centerId)) {
+      orderFilter.center = centerId;
+      accidentFilter.assignedCenter = centerId;
+    }
+
+    const [orders, accidents] = await Promise.all([
+      Order.find(orderFilter)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .populate("user", "name phone")
+        .lean(),
+      Accident.find(accidentFilter)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+    ]);
+
+    const shapedOrders = orders.map((o) => ({
+      ...o,
+      _id: String(o._id),
+      userName: o.user?.name || o.userName || "عميل",
+      userPhone: o.user?.phone || "",
+    }));
+
+    const shapedAccidents = accidents.map(accidentToOrderLike);
+
+    const merged = [...shapedAccidents, ...shapedOrders].sort((a, b) => {
+      const at = new Date(a.createdAt || 0).getTime();
+      const bt = new Date(b.createdAt || 0).getTime();
+      return bt - at;
+    });
+
+    return res.json({
+      success: true,
+      count: merged.length,
+      orders: merged.slice(0, limit),
+    });
+  } catch (error) {
+    console.error("❌ GET /api/orders/center:", error);
+    return res.status(500).json({
+      success: false,
+      message: error?.message || "خطأ في جلب الطلبات",
+    });
+  }
+});
 
 router.post("/", async (req, res) => {
   try {

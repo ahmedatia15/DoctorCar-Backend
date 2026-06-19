@@ -1,16 +1,15 @@
 import {
-  Bell,
   Car,
   ChevronLeft,
   Code2,
   Gauge,
   Headset,
   MapPinned,
-  Settings,
   ShieldCheck,
   Users,
   Wifi,
   WifiOff,
+  Wrench,
 } from "lucide-react";
 
 export default function Sidebar({
@@ -19,36 +18,37 @@ export default function Sidebar({
   setTrackingFullScreen,
   showToast,
   onOpenDeveloperTools,
+  onScrollTo,
 }) {
   const navItems = [
     {
-      label: "لوحة التحكم",
+      label: "نظرة عامة",
       icon: Gauge,
+      onClick: () => onScrollTo?.("top"),
       active: true,
     },
     {
       label: "الطلبات",
       icon: Headset,
-    },
-    {
-      label: "الفنيين",
-      icon: Users,
+      onClick: () => onScrollTo?.("orders"),
     },
     {
       label: "التتبع المباشر",
       icon: MapPinned,
       onClick: () => {
         if (selectedOrder) setTrackingFullScreen(true);
-        else showToast("اختار طلب الأول", "danger");
+        else showToast("اختر طلبًا أولًا لعرض التتبع المباشر", "danger");
       },
     },
     {
-      label: "الإشعارات",
-      icon: Bell,
+      label: "الفنيين",
+      icon: Users,
+      onClick: () => onScrollTo?.("technicians"),
     },
     {
-      label: "الإعدادات",
-      icon: Settings,
+      label: "المراكز",
+      icon: Wrench,
+      onClick: () => onScrollTo?.("catalog"),
     },
   ];
 
@@ -56,7 +56,7 @@ export default function Sidebar({
     <aside className="side">
       <div className="brand">
         <div className="logo">
-          <Car size={28} strokeWidth={2.7} />
+          <Car size={26} strokeWidth={2.7} />
         </div>
 
         <div>
@@ -73,7 +73,7 @@ export default function Sidebar({
         }
       >
         <div className="status-icon">
-          {connected ? <Wifi size={22} /> : <WifiOff size={22} />}
+          {connected ? <Wifi size={20} /> : <WifiOff size={20} />}
         </div>
 
         <div>
@@ -90,16 +90,16 @@ export default function Sidebar({
             <button
               key={item.label}
               className={item.active ? "nav-active" : ""}
-              onClick={item.onClick || undefined}
+              onClick={item.onClick}
               type="button"
             >
               <span className="nav-icon">
-                <Icon size={21} strokeWidth={2.5} />
+                <Icon size={19} strokeWidth={2.5} />
               </span>
 
               <span className="nav-label">{item.label}</span>
 
-              <ChevronLeft className="nav-arrow" size={18} strokeWidth={2.5} />
+              <ChevronLeft className="nav-arrow" size={16} strokeWidth={2.5} />
             </button>
           );
         })}
@@ -107,7 +107,7 @@ export default function Sidebar({
 
       <div className="side-footer">
         <div className="side-footer-icon">
-          <ShieldCheck size={22} />
+          <ShieldCheck size={20} />
         </div>
 
         <div>
@@ -122,7 +122,7 @@ export default function Sidebar({
         onClick={onOpenDeveloperTools}
       >
         <span className="nav-icon">
-          <Code2 size={21} strokeWidth={2.5} />
+          <Code2 size={19} strokeWidth={2.5} />
         </span>
 
         <span>

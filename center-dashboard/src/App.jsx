@@ -17,6 +17,7 @@ import LogsPanel from "./components/LogsPanel";
 import FullTracking from "./components/FullTracking";
 import CenterCatalog from "./components/CenterCatalog";
 import AppointmentsPanel from "./components/AppointmentsPanel";
+import TechniciansPanel from "./components/TechniciansPanel";
 
 import {
   assignedTech,
@@ -166,6 +167,8 @@ export default function App() {
   const [trackingFullScreen, setTrackingFullScreen] = useState(false);
   const [autoMove, setAutoMove] = useState(false);
   const [developerToolsOpen, setDeveloperToolsOpen] = useState(false);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
@@ -520,6 +523,48 @@ export default function App() {
     };
   }, [autoMove, selectedOrder, selectedOrderFinished, technicianId]);
 
+  async function fetchOrders(showFeedback = false) {
+    setOrdersLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/orders/center`, {
+        params: { limit: 200 },
+      });
+
+      const incoming = Array.isArray(res.data?.orders) ? res.data.orders : [];
+
+      setOrders((prev) => {
+        let next = prev;
+        for (const order of incoming) next = upsertOrder(next, order);
+        return next;
+      });
+
+      for (const order of incoming) {
+        const id = orderId(order);
+        if (id && !isFinished(order)) joinOrderRoom(id);
+      }
+
+      setLastUpdated(Date.now());
+
+      if (showFeedback) {
+        addLog(`تم تحميل ${incoming.length} طلبًا من قاعدة البيانات`);
+        showToast(`تم تحميل ${incoming.length} طلبًا`, "success");
+      }
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "تعذّر تحميل الطلبات من قاعدة البيانات";
+      addLog(`فشل تحميل الطلبات: ${msg}`);
+      if (showFeedback) showToast(msg, "danger");
+    } finally {
+      setOrdersLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchOrders(false);
+  }, []);
+
   async function createFakeOrder() {
     try {
       const res = await axios.post(`${API_URL}/api/test/fake-order`);
@@ -716,12 +761,20 @@ export default function App() {
         createFakeOrder={createFakeOrder}
       />
 
-      <main className="content">
-        <Header />
+      <main className="content" id="top">
+        <Header
+          connected={connected}
+          totalOrders={stats.total}
+          liveCount={stats.live}
+          emergencyCount={stats.emergency}
+          loading={ordersLoading}
+          onRefresh={() => fetchOrders(true)}
+          lastUpdated={lastUpdated}
+        />
 
         <StatsCards stats={stats} />
 
-        <section className="layout">
+        <section className="layout" id="orders">
           <OrdersPanel
             filteredOrders={filteredOrders}
             selectedOrderId={selectedOrderId}
@@ -784,7 +837,16 @@ export default function App() {
           <LogsPanel logs={logs} />
         </section>
 
-        <CenterCatalog />
+        <div id="technicians">
+          <TechniciansPanel
+            technicianId={technicianId}
+            setTechnicianId={setTechnicianId}
+          />
+        </div>
+
+        <div id="catalog">
+          <CenterCatalog />
+        </div>
 
         <AppointmentsPanel />
       </main>
@@ -795,6 +857,10 @@ export default function App() {
         setTrackingFullScreen={setTrackingFullScreen}
         showToast={showToast}
         onOpenDeveloperTools={() => setDeveloperToolsOpen(true)}
+        onScrollTo={(id) => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
       />
     </div>
   );

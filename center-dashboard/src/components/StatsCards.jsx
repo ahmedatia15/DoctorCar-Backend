@@ -19,76 +19,57 @@ export default function StatsCards({ stats }) {
       value: total,
       hint: "كل الطلبات داخل المركز",
       icon: Headset,
-      className: "summary-total",
+      tone: "neutral",
     },
     {
       title: "تحتاج تعيين فني",
       value: waiting,
       hint: waiting > 0 ? "يوجد طلبات تنتظر إجراء" : "لا توجد طلبات منتظرة",
       icon: Clock3,
-      className: waiting > 0 ? "summary-warning" : "summary-normal",
+      tone: waiting > 0 ? "warning" : "neutral",
     },
     {
       title: "قيد التنفيذ",
       value: assigned,
       hint: "طلبات تم إسنادها لفني",
       icon: CheckCircle2,
-      className: "summary-active",
+      tone: "active",
     },
     {
       title: "تتبع مباشر",
       value: live,
-      hint: "فنيين يتم تتبعهم الآن",
+      hint: "فنيون يتم تتبعهم الآن",
       icon: MapPinned,
-      className: "summary-live",
+      tone: "live",
     },
     {
       title: "بلاغات عاجلة",
       value: emergency,
       hint: emergency > 0 ? "تحتاج أولوية فورية" : "لا توجد بلاغات عاجلة",
       icon: AlertTriangle,
-      className: emergency > 0 ? "summary-danger" : "summary-normal",
+      tone: emergency > 0 ? "danger" : "neutral",
     },
   ];
 
   return (
-    <section className="center-summary">
-      <div className="center-summary-head">
-        <div>
-          <span>ملخص حالة المركز</span>
-          <h2>نظرة سريعة على التشغيل</h2>
-          <p>
-            أرقام مباشرة تساعد موظف المركز على تحديد الطلبات التي تحتاج متابعة
-            أو تدخل سريع.
-          </p>
-        </div>
-      </div>
+    <section className="stats-grid">
+      {cards.map((card) => {
+        const Icon = card.icon;
 
-      <div className="center-summary-grid">
-        {cards.map((card) => {
-          const Icon = card.icon;
+        return (
+          <article key={card.title} className={`stat-card tone-${card.tone}`}>
+            <div className="stat-card-icon">
+              <Icon size={20} strokeWidth={2.4} />
+            </div>
 
-          return (
-            <article
-              key={card.title}
-              className={`center-summary-card ${card.className}`}
-            >
-              <div className="summary-card-top">
-                <div className="summary-card-icon">
-                  <Icon size={23} strokeWidth={2.6} />
-                </div>
-
-                <div>
-                  <h3>{card.title}</h3>
-                  <p>{card.hint}</p>
-                </div>
-              </div>
-
+            <div className="stat-card-body">
+              <p className="stat-card-title">{card.title}</p>
               <strong>{card.value}</strong>
-            </article>
-          );
-        })}
-      </div>
+              <span className="stat-card-hint">{card.hint}</span>
+            </div>
+          </article>
+        );
+      })}
     </section>
   );
 }
