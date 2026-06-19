@@ -28,7 +28,7 @@ const MAINTENANCE_CENTERS = [
     rating: 5,
     lat: 31.0239666,
     lng: 31.39404454,
-    address: "سندوب - دمياط",
+    address: "سندوب - المنصورة",
     governorate: "دمياط",
     imageUrl: "assets/images/DR_Car_Sandub_Center.png",
     services: [
@@ -45,7 +45,7 @@ const MAINTENANCE_CENTERS = [
     rating: 5,
     lat: 31.04012205,
     lng: 31.3504002,
-    address: "الجامعة - دمياط",
+    address: "الجامعة - المنصورة",
     governorate: "دمياط",
     imageUrl: "assets/images/DR_Car_Elgamaa_Center.png",
     services: [
