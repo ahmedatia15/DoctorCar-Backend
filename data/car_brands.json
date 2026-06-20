@@ -26,8 +26,6 @@
   { "id": "range_rover", "name": "Range Rover" },
   { "id": "jaguar", "name": "Jaguar" },
   { "id": "porsche", "name": "Porsche" },
-  { "id": "bentley", "name": "Bentley" },
-  { "id": "rolls_royce", "name": "Rolls Royce" },
 
   { "id": "chevrolet", "name": "Chevrolet" },
   { "id": "gmc", "name": "GMC" },
@@ -49,9 +47,6 @@
   { "id": "fiat", "name": "Fiat" },
   { "id": "lancia", "name": "Lancia" },
   { "id": "alfa_romeo", "name": "Alfa Romeo" },
-  { "id": "maserati", "name": "Maserati" },
-  { "id": "ferrari", "name": "Ferrari" },
-  { "id": "lamborghini", "name": "Lamborghini" },
 
   { "id": "mg", "name": "MG" },
   { "id": "geely", "name": "Geely" },

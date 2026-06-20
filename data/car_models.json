@@ -52,7 +52,8 @@
         "Picanto",
         "Carens",
         "Stinger",
-        "Niro"
+        "Niro",
+        "Soul"
       ]
     },
     {
@@ -162,103 +163,6 @@
       ]
     },
     {
-      "name": "Ferrari",
-      "models": [
-        "488 GTB",
-        "488 Spider",
-        "812 Superfast",
-        "812 GTS",
-        "F8 Tributo",
-        "F8 Spider",
-        "Roma",
-        "SF90 Stradale",
-        "SF90 Spider",
-        "Portofino",
-        "Daytona SP3"
-      ]
-    },
-    {
-      "name": "Lamborghini",
-      "models": [
-        "Huracan",
-        "Huracan Evo",
-        "Huracan STO",
-        "Aventador",
-        "Aventador SVJ",
-        "Urus",
-        "Countach LPI 800-4",
-        "Revuelto"
-      ]
-    },
-    {
-      "name": "McLaren",
-      "models": [
-        "570S",
-        "600LT",
-        "650S",
-        "675LT",
-        "720S",
-        "765LT",
-        "GT",
-        "Artura",
-        "Elva",
-        "Senna"
-      ]
-    },
-    {
-      "name": "Bugatti",
-      "models": [
-        "Chiron",
-        "Chiron Super Sport",
-        "Divo",
-        "Centodieci",
-        "Veyron"
-      ]
-    },
-    {
-      "name": "Aston Martin",
-      "models": [
-        "Vantage",
-        "DB11",
-        "DBS Superleggera",
-        "DBX",
-        "Victor",
-        "Valhalla",
-        "Valkyrie"
-      ]
-    },
-    {
-      "name": "Bentley",
-      "models": [
-        "Bentayga",
-        "Continental GT",
-        "Continental GTC",
-        "Flying Spur",
-        "Mulsanne"
-      ]
-    },
-    {
-      "name": "Rolls Royce",
-      "models": [
-        "Phantom",
-        "Ghost",
-        "Wraith",
-        "Dawn",
-        "Cullinan",
-        "Spectre"
-      ]
-    },
-    {
-      "name": "Maserati",
-      "models": [
-        "Ghibli",
-        "Quattroporte",
-        "Levante",
-        "MC20",
-        "GranTurismo"
-      ]
-    },
-    {
       "name": "Tesla",
       "models": [
         "Model S",
@@ -268,24 +172,6 @@
         "Roadster",
         "Cybertruck",
         "Semi"
-      ]
-    },
-    {
-      "name": "Lucid",
-      "models": [
-        "Air Pure",
-        "Air Touring",
-        "Air Grand Touring",
-        "Air Sapphire"
-      ]
-    },
-    {
-      "name": "Rivian",
-      "models": [
-        "R1T",
-        "R1S",
-        "EDV-700",
-        "EDV-500"
       ]
     },
     {
