@@ -1,6 +1,6 @@
 import express from "express";
 import Technician from "../models/technicianModel.js";
-import { protect } from "../utils/authMiddleware.js";
+import { protect, authorize } from "../middleware/authMiddleware.js";
 import {
   getNearbyRequests,
   acceptRequest,
@@ -39,8 +39,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ 2. إضافة فني جديد (اختياري للاختبار أو لوحة التحكم)
-router.post("/", async (req, res) => {
+// ✅ 2. إضافة فني جديد (اختياري للاختبار أو لوحة التحكم) — admin only
+router.post("/", protect, authorize("admin"), async (req, res) => {
   try {
     const { name, serviceType, phone, lat, lng, rating, isAvailable } =
       req.body;
@@ -65,8 +65,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ 3. تحديث حالة الفني (نشط / غير متاح)
-router.put("/:id/status", async (req, res) => {
+// ✅ 3. تحديث حالة الفني (نشط / غير متاح) — admin only
+router.put("/:id/status", protect, authorize("admin"), async (req, res) => {
   try {
     const tech = await Technician.findById(req.params.id);
     if (!tech) {

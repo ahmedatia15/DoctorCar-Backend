@@ -11,7 +11,7 @@ import {
   getCenterReviews,
   addCenterReview,
 } from "../controllers/centerMaintenanceController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,11 +21,21 @@ router.get("/nearby", getNearbyCenters);
 // ✅ Maintenance centers (DB-backed, filtered by ?service=)
 router.get("/maintenance", getMaintenanceCenters);
 
-// ✅ OPTIONAL (Google Places) - will fail without Billing
-router.post("/import/damietta", importDamiettaCenters);
+// ✅ OPTIONAL (Google Places) - will fail without Billing — admin only
+router.post(
+  "/import/damietta",
+  protect,
+  authorize("admin"),
+  importDamiettaCenters
+);
 
-// ✅ BEST OPTION NOW ✅ Manual import (no Google needed)
-router.post("/import/manual", importCentersManual);
+// ✅ Manual import (no Google needed) — admin only
+router.post(
+  "/import/manual",
+  protect,
+  authorize("admin"),
+  importCentersManual
+);
 
 // ✅ Per-center reviews (param routes last so they don't shadow the above)
 router.get("/:id/reviews", getCenterReviews);

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Order from "../models/orderModel.js";
 import Accident from "../models/accidentModel.js";
 import { onlineTechnicians } from "../server.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -97,11 +98,9 @@ router.get("/center", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     const {
-      userId,
-      user,
       serviceName,
       serviceType,
       location,
@@ -116,12 +115,12 @@ router.post("/", async (req, res) => {
       services,
     } = req.body;
 
-    const finalUserId = userId || user;
+    // ✅ Canonical user id comes from the JWT, NOT the request body.
+    const finalUserId = req.user._id;
 
     const finalLocation = location || customerLocation || pickupLocation;
 
     if (
-      !finalUserId ||
       !serviceName ||
       !serviceType ||
       !finalLocation ||
@@ -131,7 +130,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "⚠️ بيانات ناقصة",
-        required: ["userId/user", "serviceName", "serviceType", "location.lat", "location.lng"],
+        required: ["serviceName", "serviceType", "location.lat", "location.lng"],
         received: req.body,
       });
     }

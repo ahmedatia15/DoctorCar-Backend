@@ -5,8 +5,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import Accident from "../models/accidentModel.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// All accident endpoints require a logged-in user.
+router.use(protect);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -153,6 +157,9 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Tag the report with the authenticated user (overrides any body value).
+    payload.userId = req.user._id;
+
     const accident = await Accident.create(payload);
     emitAccidentToCenter(req, accident);
 
@@ -248,6 +255,9 @@ router.post("/emergency", async (req, res) => {
         message: "Latitude and longitude are required",
       });
     }
+
+    // Tag the report with the authenticated user.
+    payload.userId = req.user._id;
 
     const accident = await Accident.create(payload);
     emitAccidentToCenter(req, accident);
