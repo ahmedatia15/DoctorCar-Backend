@@ -98,6 +98,59 @@ router.get("/center", async (req, res) => {
   }
 });
 
+// GET /api/orders/my-orders?limit=100
+// Returns the road-service / emergency orders that belong to the authenticated
+// user, newest first. Powers the customer "Orders" screen so past requests
+// are visible across devices (not just kept in local SharedPreferences).
+router.get("/my-orders", protect, async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 100, 200);
+    const userId = req.user._id;
+
+    const orders = await Order.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate("vehicle", "brand model plateNumber color year")
+      .populate("center", "name address")
+      .lean();
+
+    const shaped = orders.map((o) => ({
+      ...o,
+      _id: String(o._id),
+      id: String(o._id),
+      vehicle: o.vehicle
+        ? {
+            _id: String(o.vehicle._id),
+            brand: o.vehicle.brand || "",
+            model: o.vehicle.model || "",
+            plateNumber: o.vehicle.plateNumber || "",
+            color: o.vehicle.color || "",
+            year: o.vehicle.year || null,
+          }
+        : null,
+      center: o.center
+        ? {
+            _id: String(o.center._id),
+            name: o.center.name || "",
+            address: o.center.address || "",
+          }
+        : null,
+    }));
+
+    return res.json({
+      success: true,
+      count: shaped.length,
+      orders: shaped,
+    });
+  } catch (error) {
+    console.error("❌ GET /api/orders/my-orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: error?.message || "خطأ في جلب الطلبات",
+    });
+  }
+});
+
 router.post("/", protect, async (req, res) => {
   try {
     const {
